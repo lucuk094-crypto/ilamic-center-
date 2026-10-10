@@ -18,6 +18,8 @@ const COUNTED = ["subuh", "dzuhur", "ashar", "maghrib", "isya"];
 
 const WIB = { timeZone: "Asia/Jakarta" };
 
+// Date yang komponen jam/tanggalnya sama dengan waktu WIB.
+// Jangan diformat lagi dengan timeZone, karena akan bergeser.
 function wibNow() {
   // Waktu WIB sebagai Date lokal (tanpa pengaruh zona perangkat)
   const s = new Date().toLocaleString("en-US", { ...WIB });
@@ -31,10 +33,12 @@ export default function JadwalSholat() {
   const [kabkota, setKabkota] = useState("Kota Kediri");
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
-  const [now, setNow] = useState(() => wibNow());
+  // null saat render pertama (server & client sama) agar tidak terjadi hydration mismatch
+  const [now, setNow] = useState(null);
   const [geo, setGeo] = useState({ status: "idle", label: "", msg: "" });
 
   useEffect(() => {
+    setNow(wibNow());
     const t = setInterval(() => setNow(wibNow()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -57,7 +61,8 @@ export default function JadwalSholat() {
   useEffect(() => {
     if (!kabkota) return;
     setData(null); setErr(null);
-    const y = now.getFullYear(), m = now.getMonth() + 1;
+    const n = wibNow();
+    const y = n.getFullYear(), m = n.getMonth() + 1;
     fetch(`/api/shalat?type=jadwal&provinsi=${encodeURIComponent(provinsi)}&kabkota=${encodeURIComponent(kabkota)}&bulan=${m}&tahun=${y}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => setData(d.data))
@@ -110,6 +115,7 @@ export default function JadwalSholat() {
   };
 
   const todayStr = useMemo(() => {
+    if (!now) return "";
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, "0"), d = String(now.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   }, [now]);
@@ -117,7 +123,7 @@ export default function JadwalSholat() {
   const today = data?.jadwal?.find((j) => j.tanggal_lengkap === todayStr);
 
   const next = useMemo(() => {
-    if (!today) return null;
+    if (!today || !now) return null;
     const minutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
     const toMin = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
     for (const k of COUNTED) {
@@ -162,14 +168,15 @@ export default function JadwalSholat() {
       <Reveal>
         <div className="card" style={{ padding: 32, overflow: "hidden" }}>
           <div className="orb" style={{ width: 240, height: 240, background: "var(--neon)", right: -60, top: -60, opacity: 0.2 }} />
+          {now && (
           <div style={{ position: "relative", display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
               <div className="eyebrow">Hari ini · {data?.kabkota || kabkota}</div>
               <div style={{ fontSize: 15, marginTop: 10 }} className="muted">
-                {now.toLocaleDateString("id-ID", { ...WIB, weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                {now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
               </div>
               <div style={{ fontSize: 46, fontWeight: 700, letterSpacing: "-0.03em", marginTop: 6, fontVariantNumeric: "tabular-nums" }}>
-                {now.toLocaleTimeString("id-ID", { ...WIB, hour: "2-digit", minute: "2-digit", second: "2-digit" }).replace(/\./g, ":")}
+                {now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).replace(/\./g, ":")}
                 <span className="muted" style={{ fontSize: 14, marginLeft: 10 }}>WIB</span>
               </div>
             </div>
@@ -183,6 +190,7 @@ export default function JadwalSholat() {
             )}
           </div>
 
+          )}
           {today && (
             <div style={{ position: "relative", display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))", marginTop: 28 }}>
               {PRAYERS.map((p) => {

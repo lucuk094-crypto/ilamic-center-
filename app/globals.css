@@ -117,6 +117,9 @@ input, select { font: inherit; color: inherit; }
   border: 1px solid rgba(243,211,138,.35); color: var(--gold); letter-spacing: .08em;
 }
 
+/* Elemen dekoratif (orb, marquee) tidak boleh memunculkan scroll horizontal */
+html, body { overflow-x: clip; }
+
 /* ---------- Header ---------- */
 .header {
   position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
@@ -124,12 +127,13 @@ input, select { font: inherit; color: inherit; }
   border-radius: 999px; transition: all .6s var(--ease);
 }
 .header.scrolled { top: 8px; }
+.header.is-open { border-radius: 28px; }
 .nav-link {
-  position: relative; padding: 8px 14px; font-size: 14px; color: var(--muted);
+  position: relative; padding: 8px 10px; font-size: 13.5px; color: var(--muted); white-space: nowrap;
   transition: color .3s;
 }
 .nav-link::after {
-  content: ""; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 1px;
+  content: ""; position: absolute; left: 10px; right: 10px; bottom: 2px; height: 1px;
   background: var(--neon); box-shadow: 0 0 8px var(--neon);
   transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease);
 }
@@ -228,6 +232,10 @@ input, select { font: inherit; color: inherit; }
   .reveal { opacity: 1; transform: none; filter: none; }
 }
 
+/* Menu lebar hanya tampil di layar besar; di bawahnya pakai tombol menu */
+@media (max-width: 1099px) {
+  .nav-wide { display: none !important; }
+}
 @media (max-width: 760px) {
   .nav-desktop { display: none !important; }
   .h1 { font-size: 2.3rem; }

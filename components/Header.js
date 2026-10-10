@@ -39,16 +39,16 @@ export default function Header() {
   const isActive = (href) => (href === "/" ? pathname === "/" || pathname.startsWith("/surah") : pathname.startsWith(href));
 
   return (
-    <header className={`header glass ${scrolled ? "scrolled" : ""}`} style={{ padding: "10px 12px 10px 16px" }}>
+    <header className={`header glass ${scrolled ? "scrolled" : ""} ${open ? "is-open" : ""}`} style={{ padding: "10px 12px 10px 16px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "space-between" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", flexShrink: 0 }}>
           <span className="logo-mark"><span /></span>
-          <span style={{ fontWeight: 700, letterSpacing: "-0.01em" }}>
+          <span style={{ fontWeight: 700, letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>
             Islamic <span className="gradient-text">Center</span>
           </span>
         </Link>
 
-        <nav className="nav-desktop" style={{ display: "flex", gap: 2 }}>
+        <nav className="nav-wide" aria-label="Menu utama" style={{ display: "flex", gap: 2, flexWrap: "nowrap" }}>
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={`nav-link ${isActive(n.href) ? "active" : ""}`}>
               {n.label}
@@ -57,14 +57,11 @@ export default function Header() {
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <form onSubmit={submit} className="nav-desktop" style={{ width: 220 }}>
-            <div className="search" style={{ height: 40, padding: "0 14px" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ color: "var(--muted)" }}>
-                <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
-              </svg>
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari surah, doa…" style={{ fontSize: 14 }} />
-            </div>
-          </form>
+          <Link href="/cari" className="btn btn-ghost" style={{ padding: 0, width: 42, height: 42, justifyContent: "center" }} aria-label="Cari">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+            </svg>
+          </Link>
           <button className="btn btn-ghost" style={{ padding: 0, width: 42, height: 42, justifyContent: "center" }} onClick={() => setOpen(!open)} aria-label="Menu" aria-expanded={open}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 8h16M4 16h16" />}
